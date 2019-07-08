@@ -2,7 +2,8 @@ import sys
 
 
 def load_data(database_filepath):
-    pass
+    
+    return X, Y, category_names
 
 
 def tokenize(text):
