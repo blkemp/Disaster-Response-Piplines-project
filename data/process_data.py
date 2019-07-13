@@ -8,9 +8,13 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'stopwords'])
-from sklearn.preprocessing import minmax_scale
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    Loads two csv files - messages and categories and returns as a merged dataframe
+    With columns for original message text and True/False integer values regarding the 
+    applicability of 36 category types.
+    '''
     # read in messages data 
     df = pd.read_csv(messages_filepath)
     #OneHotEncode genre column
@@ -41,6 +45,12 @@ def load_data(messages_filepath, categories_filepath):
     return df
 
 def clean_data(df):
+    '''
+    Takes a dataframe and:
+    1. Removes any duplicates
+    2. Ensures category data is only binary (sets any values other than 0 or 1 to 1)
+    3. Removes features with zero variation (e.g. all category values are 0)
+    '''
     # drop duplicates
     df.drop_duplicates(inplace=True)
 
@@ -63,10 +73,17 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
+    '''
+    Saves a given dataframe as a table in a SQLite database file 
+    '''
     engine = create_engine('sqlite:///{}'.format(database_filename))
     df.to_sql('InsertTableName', engine, index=False) 
 
 def main():
+    '''
+    Loads, transforms, cleans and saves messages and categories csv files as a single table within
+    a SQLite database file, for use in machine learning application training.
+    '''
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]

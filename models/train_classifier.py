@@ -5,7 +5,7 @@ import pandas as pd
 import nltk
 import numpy as np
 import pandas as pd
-import sqlalchemy
+from sqlalchemy import create_engine
 import pickle
 
 from nltk.tokenize import word_tokenize
@@ -13,7 +13,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 from sklearn.externals import joblib 
-from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.metrics import f1_score, roc_auc_score, classification_report
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -23,7 +23,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
+
 
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'stopwords'])
 
@@ -83,8 +83,12 @@ class BasicTextAnalytics(BaseEstimator, TransformerMixin):
         return trainDF.drop('text',axis=1)
 
 def load_data(database_filepath):
-    # load from database
-    engine = sqlalchemy.create_engine(database_filepath)
+    '''Imports the "InsertTableName" table from a specified database file
+    Returns X and Y datasets as pandas DataFrames as well as a list of column names
+    (column names not currently in use but may be useful for later analyses of 
+    feature importance, etc.)'''
+    #  load from database
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_table('InsertTableName', engine)
     
     # split input and response variables
@@ -94,6 +98,8 @@ def load_data(database_filepath):
     return X, Y, category_names
 
 def tokenize(text):
+    '''tokenizing function which splits given text into words, removing stop words and spaces 
+    as well as outputting in lower case'''
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -106,9 +112,12 @@ def tokenize(text):
 
 
 def build_model():
-    # Build and scale engineered features separate to Natural Language transformations
-    # We create the preprocessing pipelines for both numeric and text data.
-
+    ''' Build and scale engineered features separate to Natural Language transformations
+    Creates preprocessing pipelines for both numeric and text data, then completes a quick
+    Grid search over RandomForestClassifier key parameters.
+    Note: gridsearch has not been applied to text transformation hyperparameters based on previous
+    searches showing minimal impacts in tuning these. 
+    '''
     pipeline_model = Pipeline([
         ('features', FeatureUnion([
             ('text_pipeline', Pipeline([
@@ -141,20 +150,37 @@ def build_model():
     return cv
 
 def evaluate_model(model, X_test, Y_test):
-    # Note: this function used to have a variable "category_names" per the default
-    # I'm not sure it was necessary so I have removed it.
-
+    '''
+    Evalutes the model using sklearns 'classification report' function to return precision and recall for each class
+    Inputs: model - model or pipeline contructed through sklearn (or other ML tool with a 
+                        "predict" function avaialable for the object type)
+            X_test - test set data [pandas dataframe/series]
+            Y_test - correct categories for the test data [pandas dataframe/series]
+    '''
     y_pred = model.predict(X_test)
     
-    print('f1 score: {}'.format(f1_score(Y_test, y_pred, average='weighted')))
+    for index, feature in enumerate(Y_test.columns):
+        print(feature)
+        print(classification_report(Y_test[feature], y_pred[:, index]))
+        print('f1 score: {}'.format(f1_score(Y_test[feature], y_pred[:, index], average='weighted')))
+    
     pass
 
 
 def save_model(model, model_filepath):
+    '''
+    Saves the model trained within the "main" function.
+    '''
     joblib.dump(model, model_filepath) 
 
 
 def main():
+    '''
+    Creates a trained multi-output classifier Machine Learning model trained using an input database.
+    Includes gridsearch functionality for RandomForestClassifier  as well as some 
+    natural language feature creation and tokenisation to enhance performance.
+    Saves the trained model as a pickle file for later use within web applications.
+    '''
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
