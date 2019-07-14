@@ -13,7 +13,7 @@ from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
-
+from sklearn.base import BaseEstimator, TransformerMixin
 
 app = Flask(__name__)
 

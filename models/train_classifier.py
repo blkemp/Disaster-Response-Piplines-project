@@ -90,11 +90,20 @@ def load_data(database_filepath):
     #  load from database
     engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_table('InsertTableName', engine)
-    
+
     # split input and response variables
+    category_names = set(df.columns) - set({'id',
+                                            'message',
+                                            'original',
+                                            'related',
+                                            'genre',
+                                            'genre_direct',
+                                            'genre_news',
+                                            'genre_social'})
+    category_names = list(category_names)
+    
     X = df['message']
-    Y = df.drop(['id','message','original','genre'], axis=1)
-    category_names = Y.columns
+    Y = df[category_names]
     return X, Y, category_names
 
 def tokenize(text):
@@ -171,7 +180,7 @@ def save_model(model, model_filepath):
     '''
     Saves the model trained within the "main" function.
     '''
-    joblib.dump(model, model_filepath) 
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
