@@ -2,14 +2,14 @@
 This project has the intent of representing a full ETL piepline from raw data through to a finished interactive webpage app. The app itself analyses text inputs from users in order to classify potential factors for diagnosing responses in areas hit by natural disasters. It does this by utilising a RandomForect multi-output classifier model trained through the ETL pipeline process.
 
 ### Required installations:
-Testing has been completed on Python 3.6.3. Some testing has been completed on Python 3.7 but I cannot attest to it's reliability at this point. Brackets next to libraries below for fully tested versions. 
+Testing has been completed on Python 3.6.3 and 3.6.8. Some testing has been completed on Python 3.7 but I cannot attest to it's reliability at this point. Brackets next to libraries below for fully tested versions. 
 - sys
 - pandas (0.23.3)
 - numpy (1.12.1)
 - sqlalchemy (1.2.18)   
 - nltk (3.2.5)
 - plotly (2.0.15)
-- sklearn (0.19.1, also tested 0.23)
+- sklearn (0.19.1, also tested 0.20.3)
 - pickle
 
 ### Instructions:
@@ -24,6 +24,8 @@ Testing has been completed on Python 3.6.3. Some testing has been completed on P
     `python run.py`
 
 3. Go to http://0.0.0.0:3001/
+If this does not work and you are running on Windows, please follow instructions found here: https://stackoverflow.com/questions/30554702/cant-connect-to-flask-web-service-connection-refused
+
 
 ### Modules
 #### process_data.py

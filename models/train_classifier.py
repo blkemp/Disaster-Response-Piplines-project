@@ -92,15 +92,11 @@ def load_data(database_filepath):
     df = pd.read_sql_table('InsertTableName', engine)
 
     # split input and response variables
-    category_names = set(df.columns) - set({'id',
-                                            'message',
-                                            'original',
-                                            'related',
-                                            'genre',
-                                            'genre_direct',
-                                            'genre_news',
-                                            'genre_social'})
-    category_names = list(category_names)
+    category_excludes = ['id','message','original','related','genre','genre_direct','genre_news','genre_social']
+    category_names = []
+    for column in df.columns:
+        if column not in category_excludes:
+            category_names.append(column)
     
     X = df['message']
     Y = df[category_names]
@@ -147,8 +143,8 @@ def build_model():
     ])
     # specify parameters for grid search
     parameters = {
-        'clf__estimator__min_samples_split' : [4,8,16,32],
-        'clf__estimator__max_depth': [None,50,100]
+        'clf__estimator__min_samples_split' : [8,16],
+        'clf__estimator__max_depth': [50,100]
     }
 
     # create grid search object
