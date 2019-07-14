@@ -13,7 +13,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 from sklearn.externals import joblib 
-from sklearn.metrics import f1_score, roc_auc_score, classification_report
+from sklearn.metrics import f1_score, make_scorer, classification_report
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -154,7 +154,8 @@ def build_model():
     # create grid search object
     # using f1 score rather than auc because of the significant imbalance in class distributions
     # per https://machinelearningmastery.com/roc-curves-and-precision-recall-curves-for-classification-in-python/
-    cv = GridSearchCV(pipeline_model, parameters, scoring='f1_weighted', verbose=3)
+    scorer = make_scorer(f1_score, average = 'weighted')
+    cv = GridSearchCV(pipeline_model, parameters, scoring = scorer, verbose=3)
 
     return cv
 

@@ -4,7 +4,10 @@ import pandas as pd
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-#from models.train_classifier import BasicTextAnalytics
+try:
+    from models.train_classifier import BasicTextAnalytics
+except:
+    pass
 # for some reason this only works in the virtual environment and not on my local machine.
 # inserted this class at the end of the text to save the hassle
 
@@ -44,7 +47,7 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-
+    
     # Get categories excluding OHE and related vectors
     category_names = set(df.columns) - set({'id',
                                             'message',
@@ -54,9 +57,10 @@ def index():
                                             'genre_direct',
                                             'genre_news',
                                             'genre_social'})
+    category_names = list(category_names)
     categories = df[category_names]
     category_means = categories.mean().sort_values(ascending=False)[1:11]
-    category_counts = categories.count().sort_values(ascending=False)[1:11]
+    low_cat_means = categories.mean().sort_values(ascending=True)[1:11]
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -83,15 +87,15 @@ def index():
         {
             'data': [
                 Bar(
-                    x=category_names,
-                    y=category_counts
+                    x=low_cat_means.index,
+                    y=low_cat_means
                 )
             ],
 
             'layout': {
-                'title': 'Distribution of Message Categories',
+                'title': 'Least Common Message Categories',
                 'yaxis': {
-                    'title': "Count"
+                    'title': "Percentage"
                 },
                 'xaxis': {
                     'title': "Category"
@@ -101,13 +105,13 @@ def index():
         {
             'data': [
                 Bar(
-                    x=category_names,
+                    x=category_means.index,
                     y=category_means
                 )
             ],
 
             'layout': {
-                'title': 'Top 10 Message Categories',
+                'title': 'Most Common Message Categories',
                 'yaxis': {
                     'title': "Percentage"
                 },
@@ -150,8 +154,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
 
 class BasicTextAnalytics(BaseEstimator, TransformerMixin):
     '''
